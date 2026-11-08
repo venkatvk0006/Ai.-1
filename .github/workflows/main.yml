@@ -23,7 +23,7 @@ jobs:
             unzip -o venkat-ai.zip -d .
           fi
 
-      # Secrets பிளகினுக்குத் தேவையான போலி .env கோப்பை உருவாக்குதல்
+      # .env கோப்பு இல்லையெனில் உருவாக்குதல்
       - name: Create Dummy .env File
         run: |
           touch .env
@@ -36,23 +36,23 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Gradle 9.3.1
+      # நிலையான Gradle 8.12 பதிப்பை அமைத்தல்
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '9.3.1'
+          gradle-version: '8.12'
 
-      - name: Ensure Executable Gradlew Wrapper
+      # Gradle Wrapper கோப்புகளை முறையாக அமைத்தல்
+      - name: Generate Wrapper
         run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version 9.3.1
-          fi
+          gradle wrapper --gradle-version 8.12
           chmod +x gradlew
 
-      # சோதனைகளைத் தவிர்த்து (skip tests) APK-வை மட்டும் பில்ட் செய்தல்
+      # Debug APK பில்ட் செய்தல் (சோதனைகளைத் தவிர்த்து)
       - name: Build Debug APK
         run: ./gradlew assembleDebug -x test -x lint --no-daemon --stacktrace
 
-      # APK-வை பதிவிறக்க பதிவேற்றுதல்
+      # தயாரான APK-வை பதிவேற்றுதல்
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
