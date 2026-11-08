@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. ஜிப் கோப்பு இருந்தால் முழுமையாகப் பிரித்தல்
+      # 1. ஜிப் ஃபைலாக இருந்தால் அன்ஜிப் செய்தல்
       - name: Unpack Project
         run: |
           if [ -f venkat-ai.zip ]; then
@@ -26,34 +26,41 @@ jobs:
             cp -r venkat-ai/* .
           fi
 
-      # 2. .env கோப்பை உருவாக்குதல்
+      # 2. பொருந்தாத பதிப்புகளை நிலையான AGP 8.8.0 பதிப்பிற்கு மாற்றுதல்
+      - name: Fix AGP and SDK Versions
+        run: |
+          # AGP 9.1.1-ஐ நிலையான 8.8.0-க்கு மாற்றுதல்
+          if [ -f gradle/libs.versions.toml ]; then
+            sed -i 's/agp = "9.1.1"/agp = "8.8.0"/g' gradle/libs.versions.toml
+          fi
+          # compileSdk அமைப்பை நிலையான 35-க்கு மாற்றுதல்
+          if [ -f app/build.gradle.kts ]; then
+            sed -i 's/compileSdk { version = release(36) { minorApiLevel = 1 } }/compileSdk = 35/g' app/build.gradle.kts
+            sed -i 's/compileSdk = 36/compileSdk = 35/g' app/build.gradle.kts
+            sed -i 's/targetSdk = 36/targetSdk = 35/g' app/build.gradle.kts
+          fi
+
+      # 3. .env கோப்பை உருவாக்குதல்
       - name: Setup Environment File
         run: |
           touch .env
           echo "GEMINI_API_KEY=dummy_key" >> .env
           echo "FIREBASE_APPCHECK_DEBUG_TOKEN=dummy_token" >> .env
 
-      # 3. compileSdk அமைப்பை சரிசெய்தல்
-      - name: Fix compileSdk Configuration
-        run: |
-          if [ -f app/build.gradle.kts ]; then
-            sed -i 's/compileSdk { version = release(36) { minorApiLevel = 1 } }/compileSdk = 36/g' app/build.gradle.kts
-          fi
-
-      # 4. Java JDK 21 அமைத்தல்
-      - name: Set up Java JDK 21
+      # 4. Java JDK 17 அமைத்தல்
+      - name: Set up Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
-      # 5. அதிகாரப்பூர்வமான Gradle 8.12 அமைத்தல்
+      # 5. Gradle 8.11.1 அமைத்தல்
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.12'
+          gradle-version: '8.11.1'
 
-      # 6. நேரடியாக Gradle கொண்டு Debug APK பில்ட் செய்தல் (wrapper தேவையில்லை)
+      # 6. Debug APK பில்ட் செய்தல்
       - name: Build Debug APK
         run: gradle assembleDebug -x test -x lint --no-daemon --stacktrace
 
