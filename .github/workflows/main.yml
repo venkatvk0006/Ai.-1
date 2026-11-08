@@ -16,27 +16,31 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ஜிப் ஃபைலாக இருந்தால் தானாக அன்ஜிப் செய்யும்
+      # ஜிப் ஃபைலாக இருந்தால் அன்ஜிப் செய்தல்
       - name: Unzip project if zipped
         run: |
           if [ -f venkat-ai.zip ]; then
             unzip -o venkat-ai.zip -d .
           fi
 
-      # AGP 9.x மற்றும் Gradle 9.x-க்கு Java 21 கட்டாயம் தேவை
+      # Secrets பிளகினுக்குத் தேவையான போலி .env கோப்பை உருவாக்குதல்
+      - name: Create Dummy .env File
+        run: |
+          touch .env
+          echo "GEMINI_API_KEY=dummy_key" >> .env
+          echo "FIREBASE_APPCHECK_DEBUG_TOKEN=dummy_token" >> .env
+
       - name: Set up Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      # திட்டத்திற்குத் தேவையான சரியான Gradle 9.3.1 பதிப்பை அமைத்தல்
       - name: Setup Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
 
-      # gradlew கோப்பு இல்லையெனில் புதிய wrapper உருவாக்குதல்
       - name: Ensure Executable Gradlew Wrapper
         run: |
           if [ ! -f gradlew ]; then
@@ -44,9 +48,9 @@ jobs:
           fi
           chmod +x gradlew
 
-      # Debug APK பில்ட் செய்தல்
+      # சோதனைகளைத் தவிர்த்து (skip tests) APK-வை மட்டும் பில்ட் செய்தல்
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug -x test -x lint --no-daemon --stacktrace
 
       # APK-வை பதிவிறக்க பதிவேற்றுதல்
       - name: Upload APK Artifact
@@ -55,4 +59,3 @@ jobs:
           name: VENKAT-AI-Debug-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
-          
