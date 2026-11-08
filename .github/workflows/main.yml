@@ -23,28 +23,32 @@ jobs:
             unzip -o venkat-ai.zip -d .
           fi
 
-      - name: Set up Java JDK 17
+      # AGP 9.x மற்றும் Gradle 9.x-க்கு Java 21 கட்டாயம் தேவை
+      - name: Set up Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
-      # நவீன Gradle 8.11.1-ஐ அமைத்து wrapper உருவாக்குதல்
-      - name: Setup Modern Gradle Wrapper
+      # திட்டத்திற்குத் தேவையான சரியான Gradle 9.3.1 பதிப்பை அமைத்தல்
+      - name: Setup Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.11.1'
+          gradle-version: '9.3.1'
 
-      - name: Generate Wrapper and Fix Permissions
+      # gradlew கோப்பு இல்லையெனில் புதிய wrapper உருவாக்குதல்
+      - name: Ensure Executable Gradlew Wrapper
         run: |
-          gradle wrapper --gradle-version 8.11.1
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version 9.3.1
+          fi
           chmod +x gradlew
 
       # Debug APK பில்ட் செய்தல்
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # உருவான APK கோப்பை பதிவிறக்கம் செய்ய பதிவேற்றுதல்
+      # APK-வை பதிவிறக்க பதிவேற்றுதல்
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
