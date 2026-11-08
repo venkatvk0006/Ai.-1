@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:573658573430:android:4f971dcece297e2d8fcd57",
+        "mobilesdk_app_id": "1:137579737047:android:b6be33cd8b81b150ada592",
         "android_client_info": {
-          "package_name": "com.example"
+          "package_name": "com.venkat.ai"
         }
       },
       "oauth_client": [],
