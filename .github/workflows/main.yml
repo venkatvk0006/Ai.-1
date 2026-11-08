@@ -22,7 +22,6 @@ jobs:
           if [ -f venkat-ai.zip ]; then
             unzip -o venkat-ai.zip -d .
           fi
-          # ஒருவேளை துணை ஃபோல்டரில் இருந்தால் வெளியே கொண்டுவருதல்
           if [ ! -f "build.gradle.kts" ] && [ -d "venkat-ai" ]; then
             cp -r venkat-ai/* .
           fi
@@ -34,7 +33,7 @@ jobs:
           echo "GEMINI_API_KEY=dummy_key" >> .env
           echo "FIREBASE_APPCHECK_DEBUG_TOKEN=dummy_token" >> .env
 
-      # 3. compileSdk பிழை வராமல் எளிய நிலைக்கு மாற்றுதல்
+      # 3. compileSdk அமைப்பை சரிசெய்தல்
       - name: Fix compileSdk Configuration
         run: |
           if [ -f app/build.gradle.kts ]; then
@@ -54,17 +53,11 @@ jobs:
         with:
           gradle-version: '8.12'
 
-      # 6. Wrapper அமைத்தல்
-      - name: Create Gradlew Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.12 --validate-url=false
-          chmod +x gradlew
-
-      # 7. Debug APK பில்ட் செய்தல்
+      # 6. நேரடியாக Gradle கொண்டு Debug APK பில்ட் செய்தல் (wrapper தேவையில்லை)
       - name: Build Debug APK
-        run: ./gradlew assembleDebug -x test -x lint --no-daemon --stacktrace
+        run: gradle assembleDebug -x test -x lint --no-daemon --stacktrace
 
-      # 8. உருவான APK-வை பதிவேற்றுதல்
+      # 7. தயாரான APK-வை பதிவேற்றுதல்
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
